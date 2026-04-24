@@ -9,7 +9,7 @@ const HUD_SCALE = 1.25;
 const HUD_OPACITY = 0.25;
 const HUD_GRAY = 0.75;
 const HUD_TIMER_Y = H / 2 - 70;
-const HUD_PREVIEW_Y = H / 2 - 100;
+const HUD_PREVIEW_Y = H / 2 - 25;
 
 const ST = {
   NULL: -1,
