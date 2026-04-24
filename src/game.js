@@ -1349,7 +1349,7 @@ class TitlePhase {
     if (!this.isGameOver) {
       drawCenteredVectorText(ctx, "CLICK TO BEGIN", 500, 1.5, 1.5, rgba(0.5, 0.5, 1, this.titleAlpha));
     } else {
-      drawCenteredVectorText(ctx, `You made it to level ${this.game.currentLevel}.`, 700, 1.1, 1.1, rgba(1, 1, 1, this.titleAlpha));
+      drawCenteredVectorText(ctx, `You made it to Stage ${this.game.currentLevel}.`, 700, 1.1, 1.1, rgba(1, 1, 1, this.titleAlpha));
     }
   }
 }
@@ -1573,7 +1573,7 @@ class PlaceGunsPhase {
     this.time = 0;
     this.secondsLeft = 10;
     this.waitingForChoice = false;
-    this.title = new PhaseTitle(this.game, () => "DEPLOY WEAPONS");
+    this.title = new PhaseTitle(this.game, () => "DEPLOY GUNS");
     let guns = this.game.barges.filter((b) => b.active).length * 2;
     if (this.game.currentLevel === 1) guns++;
     this.newGuns = guns - 1;
@@ -1691,6 +1691,16 @@ class BattlePhase {
     for (let i = 0; i <= this.game.indexOfLastGun; i++) this.game.guns[i].animate(ticks);
     this.game.playerMissiles.animate(ticks);
     if (this.game.playerMissiles.explodeSound()) this.game.audio.play("missileBlast");
+    let damagedOwnShield = false;
+    for (let y = 0; y < YS; y++) {
+      for (let x = 0; x < XS; x++) {
+        if (this.game.grid.get(x, y) === ST.SHIELD && this.game.playerMissiles.anyCollisionWithPoint(x * SECTOR + 8, y * SECTOR + 8)) {
+          this.game.grid.set(x, y, ST.VACANT);
+          damagedOwnShield = true;
+        }
+      }
+    }
+    if (damagedOwnShield) this.game.audio.play("missileHit");
     if (this.time > 500 && !this.battling && !this.waitingForMissiles) {
       this.battling = true;
       this.game.destroyers.go();
@@ -1759,7 +1769,7 @@ class PlaceShieldsPhase {
     this.done = false;
     this.time = 0;
     this.secondsLeft = 20;
-    this.title = new PhaseTitle(this.game, () => "REPAIR SHIELDS");
+    this.title = new PhaseTitle(this.game, () => "SHIELDS UP");
     this.title.start(0);
     this.section.reshape(this.game.rng.generate(0, 10));
     this.section.move(0, 0);
@@ -1875,7 +1885,7 @@ class NewWavePhase {
 
   draw(ctx) {
     if (this.showingLevelComplete) {
-      drawCenteredVectorText(ctx, `LEVEL ${this.game.currentLevel} COMPLETE`, 275, 3, 6, rgba(1, 1, 0.2, 0.5));
+      drawCenteredVectorText(ctx, `STAGE ${this.game.currentLevel} COMPLETE`, 275, 3, 6, rgba(1, 1, 0.2, 0.5));
     } else {
       this.game.drawWorld(ctx);
       if (this.showingTitle) this.title.draw(ctx);
