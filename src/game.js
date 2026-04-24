@@ -1340,9 +1340,8 @@ class TitlePhase {
     drawCenteredVectorText(ctx, title, this.titleY, titleScaleX, titleScaleY, rgba(this.isGameOver ? 1 : 1, this.isGameOver ? 0.2 : 1, this.isGameOver ? 0.2 : 0.2, this.titleAlpha), this.titleGlow);
     if (!this.isGameOver) {
       drawCenteredVectorText(ctx, "CLICK TO BEGIN", 500, 1.5, 1.5, rgba(0.5, 0.5, 1, this.titleAlpha));
-      drawVectorText(ctx, "www.iDevGames.com - 21 days later: Vectorized entry", 165, 700, 0.9, 0.9, rgba(0.5, 0.5, 1, this.titleAlpha));
     } else {
-      drawCenteredVectorText(ctx, `You made it to level ${this.game.currentLevel}. Visit www.iDevGames.com today!`, 700, 1.1, 1.1, rgba(1, 1, 1, this.titleAlpha));
+      drawCenteredVectorText(ctx, `You made it to level ${this.game.currentLevel}.`, 700, 1.1, 1.1, rgba(1, 1, 1, this.titleAlpha));
     }
   }
 }
