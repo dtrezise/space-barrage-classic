@@ -207,6 +207,18 @@ function drawVectorText(ctx, text, x, y, sx, sy, color, glow = 0) {
   ctx.restore();
 }
 
+function centeredVectorTextX(ctx, text, sx) {
+  ctx.save();
+  ctx.font = "32px Verdana, Geneva, sans-serif";
+  const width = ctx.measureText(text).width * sx;
+  ctx.restore();
+  return (W - width) / 2;
+}
+
+function drawCenteredVectorText(ctx, text, y, sx, sy, color, glow = 0) {
+  drawVectorText(ctx, text, centeredVectorTextX(ctx, text, sx), y, sx, sy, color, glow);
+}
+
 function drawPointer(ctx, x, y) {
   polyline(ctx, [0, 0, 0, 15, 4, 10, 12, 12, 0, 0], {
     x,
@@ -1282,7 +1294,6 @@ class TitlePhase {
     this.time = 0;
     this.showing = false;
     this.erasing = false;
-    this.titleX = this.isGameOver ? 280 : 290;
     this.titleY = 300;
     this.titleAlpha = 0.8;
     this.titleScaleX = 50;
@@ -1323,13 +1334,15 @@ class TitlePhase {
   draw(ctx) {
     if (!this.showing && !this.erasing) return;
     const title = this.isGameOver ? "G A M E  O V E R" : "SPACE BARRAGE";
+    const titleScaleX = this.titleScaleX / 3;
+    const titleScaleY = this.titleScaleY / 3;
     if (this.isGameOver) this.game.drawWorld(ctx);
-    drawVectorText(ctx, title, this.titleX, this.titleY, this.titleScaleX / 3, this.titleScaleY / 3, rgba(this.isGameOver ? 1 : 1, this.isGameOver ? 0.2 : 1, this.isGameOver ? 0.2 : 0.2, this.titleAlpha), this.titleGlow);
+    drawCenteredVectorText(ctx, title, this.titleY, titleScaleX, titleScaleY, rgba(this.isGameOver ? 1 : 1, this.isGameOver ? 0.2 : 1, this.isGameOver ? 0.2 : 0.2, this.titleAlpha), this.titleGlow);
     if (!this.isGameOver) {
-      drawVectorText(ctx, "CLICK TO BEGIN", 410, 500, 1.5, 1.5, rgba(0.5, 0.5, 1, this.titleAlpha));
+      drawCenteredVectorText(ctx, "CLICK TO BEGIN", 500, 1.5, 1.5, rgba(0.5, 0.5, 1, this.titleAlpha));
       drawVectorText(ctx, "www.iDevGames.com - 21 days later: Vectorized entry", 165, 700, 0.9, 0.9, rgba(0.5, 0.5, 1, this.titleAlpha));
     } else {
-      drawVectorText(ctx, `You made it to level ${this.game.currentLevel}. Visit www.iDevGames.com today!`, 221, 700, 1.1, 1.1, rgba(1, 1, 1, this.titleAlpha));
+      drawCenteredVectorText(ctx, `You made it to level ${this.game.currentLevel}. Visit www.iDevGames.com today!`, 700, 1.1, 1.1, rgba(1, 1, 1, this.titleAlpha));
     }
   }
 }
@@ -1530,7 +1543,12 @@ class PhaseTitle {
   }
 
   draw(ctx) {
-    drawVectorText(ctx, this.textFn(), this.x, this.y, this.sx, this.sy, rgba(1, 1, 1, this.alpha), this.glow);
+    const text = this.textFn();
+    if (this.y >= H - 80) {
+      drawVectorText(ctx, text, this.x, this.y, this.sx, this.sy, rgba(1, 1, 1, this.alpha), this.glow);
+    } else {
+      drawCenteredVectorText(ctx, text, this.y, this.sx, this.sy, rgba(1, 1, 1, this.alpha), this.glow);
+    }
   }
 }
 
@@ -1634,6 +1652,15 @@ class BattlePhase {
   }
 
   pointerDown() {
+    if (!this.battling) return;
+    this.fire();
+  }
+
+  keyDown(key) {
+    if (key === " ") this.fire();
+  }
+
+  fire() {
     if (!this.battling) return;
     let fired = false;
     for (let i = 0; i <= this.game.indexOfLastGun; i++) {
@@ -1838,7 +1865,7 @@ class NewWavePhase {
 
   draw(ctx) {
     if (this.showingLevelComplete) {
-      drawVectorText(ctx, `LEVEL ${this.game.currentLevel} COMPLETE`, 230, 275, 3, 6, rgba(1, 1, 0.2, 0.5));
+      drawCenteredVectorText(ctx, `LEVEL ${this.game.currentLevel} COMPLETE`, 275, 3, 6, rgba(1, 1, 0.2, 0.5));
     } else {
       this.game.drawWorld(ctx);
       if (this.showingTitle) this.title.draw(ctx);
@@ -1938,11 +1965,13 @@ class Game {
     });
     this.canvas.addEventListener("contextmenu", (event) => event.preventDefault());
     window.addEventListener("keydown", (event) => {
+      if (event.key === " ") event.preventDefault();
       if (event.key.toLowerCase() === "m") {
         this.audio.enabled = !this.audio.enabled;
         if (!this.audio.enabled) this.audio.stopMusic();
       }
-      if (this.phase.keyDown) this.phase.keyDown(event.key);
+      this.audio.unlock();
+      if (!event.repeat && this.phase.keyDown) this.phase.keyDown(event.key);
     });
   }
 
