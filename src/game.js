@@ -7,8 +7,9 @@ const TOTAL_BARGES = 5;
 const TOTAL_GUNS = 100;
 const HUD_SCALE = 1.25;
 const HUD_OPACITY = 0.25;
+const HUD_GRAY = 0.75;
 const HUD_TIMER_Y = H / 2 - 70;
-const HUD_PREVIEW_Y = H / 2;
+const HUD_PREVIEW_Y = H / 2 - 100;
 
 const ST = {
   NULL: -1,
@@ -572,9 +573,9 @@ class Gun {
     ctx.strokeRect(corner.x * SECTOR, corner.y * SECTOR, SECTOR * 2, SECTOR * 2);
   }
 
-  draw(ctx, alpha = null, scaleMultiplier = 1) {
+  draw(ctx, alpha = null, scaleMultiplier = 1, colorOverride = null) {
     const opacity = alpha ?? (this.active ? 0.6 : 0.4);
-    const color = this.active ? rgba(1, 1, 0, opacity) : rgba(1, 1, 0.4, opacity);
+    const color = colorOverride ?? (this.active ? rgba(1, 1, 0, opacity) : rgba(1, 1, 0.4, opacity));
     polyline(ctx, GUN_POINTS, { x: this.x, y: this.y, rot: this.rotation, scale: this.scale * scaleMultiplier, color, width: 2 });
   }
 }
@@ -1559,7 +1560,7 @@ class PhaseTitle {
 }
 
 function drawTimer(ctx, seconds) {
-  drawCenteredVectorText(ctx, String(Math.max(0, seconds)).padStart(2, "0"), HUD_TIMER_Y, 3.5 * HUD_SCALE, 3.5 * HUD_SCALE, rgba(1, 1, 1, HUD_OPACITY));
+  drawCenteredVectorText(ctx, String(Math.max(0, seconds)).padStart(2, "0"), HUD_TIMER_Y, 3.5 * HUD_SCALE, 3.5 * HUD_SCALE, rgba(HUD_GRAY, HUD_GRAY, HUD_GRAY, HUD_OPACITY));
 }
 
 class PlaceGunsPhase {
@@ -1639,7 +1640,7 @@ class PlaceGunsPhase {
     const startX = W / 2 - ((count - 1) * spacing) / 2;
     for (let i = this.newGuns; i > 0; i--) {
       gun.moveTo(startX + (this.newGuns - i) * spacing, HUD_PREVIEW_Y);
-      gun.draw(ctx, HUD_OPACITY, HUD_SCALE);
+      gun.draw(ctx, HUD_OPACITY, HUD_SCALE, rgba(HUD_GRAY, HUD_GRAY, HUD_GRAY, HUD_OPACITY));
     }
     gun.moveTo(ox, oy);
   }
@@ -1762,7 +1763,7 @@ class PlaceShieldsPhase {
     this.title.start(0);
     this.section.reshape(this.game.rng.generate(0, 10));
     this.section.move(0, 0);
-    this.next.color = { r: 1, g: 1, b: 1, a: HUD_OPACITY };
+    this.next.color = { r: HUD_GRAY, g: HUD_GRAY, b: HUD_GRAY, a: HUD_OPACITY };
     this.next.move(W / 2, HUD_PREVIEW_Y);
     this.nextShape = this.game.rng.generate(0, 10);
     this.next.reshape(this.nextShape);
