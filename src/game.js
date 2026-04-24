@@ -5,6 +5,10 @@ const XS = W / SECTOR;
 const YS = H / SECTOR;
 const TOTAL_BARGES = 5;
 const TOTAL_GUNS = 100;
+const HUD_SCALE = 1.25;
+const HUD_OPACITY = 0.75;
+const HUD_TIMER_Y = H / 2 - 70;
+const HUD_PREVIEW_Y = H / 2 + 90;
 
 const ST = {
   NULL: -1,
@@ -568,9 +572,10 @@ class Gun {
     ctx.strokeRect(corner.x * SECTOR, corner.y * SECTOR, SECTOR * 2, SECTOR * 2);
   }
 
-  draw(ctx) {
-    const color = this.active ? rgba(1, 1, 0, 0.6) : rgba(1, 1, 0.4, 0.4);
-    polyline(ctx, GUN_POINTS, { x: this.x, y: this.y, rot: this.rotation, scale: this.scale, color, width: 2 });
+  draw(ctx, alpha = null, scaleMultiplier = 1) {
+    const opacity = alpha ?? (this.active ? 0.6 : 0.4);
+    const color = this.active ? rgba(1, 1, 0, opacity) : rgba(1, 1, 0.4, opacity);
+    polyline(ctx, GUN_POINTS, { x: this.x, y: this.y, rot: this.rotation, scale: this.scale * scaleMultiplier, color, width: 2 });
   }
 }
 
@@ -1163,7 +1168,7 @@ class ShieldSection {
     return fits;
   }
 
-  draw(ctx, aligned = false) {
+  draw(ctx, aligned = false, scale = 1, alpha = null) {
     let cx = this.centerX;
     let cy = this.centerY;
     if (aligned) {
@@ -1172,12 +1177,14 @@ class ShieldSection {
       cy += d.dy;
     }
     const { r, g, b, a } = this.color;
+    const opacity = alpha ?? a;
     const left = -2 * SECTOR - SECTOR / 2;
     const top = -2 * SECTOR - SECTOR / 2;
     ctx.save();
     ctx.translate(cx, cy);
+    ctx.scale(scale, scale);
     ctx.rotate((this.rotation * Math.PI) / 180);
-    setLine(ctx, rgba(r, g, b, a), 2);
+    setLine(ctx, rgba(r, g, b, opacity), 2);
     for (let i = 0; i < 25; i++) {
       if (this.sector[i] !== ST.SHIELD) continue;
       const x = left + (i % 5) * SECTOR;
@@ -1185,7 +1192,7 @@ class ShieldSection {
       this.drawShapeCell(ctx, i, x, y, this.sector);
     }
     if (this.osGlow > 0) {
-      ctx.fillStyle = rgba(this.osGlow, 0.1, 0.1, clamp(a + 0.2, 0, 1));
+      ctx.fillStyle = rgba(this.osGlow, 0.1, 0.1, clamp(opacity + 0.2, 0, 1));
       for (let i = 0; i < 25; i++) {
         if (this.offending[i] === ST.SHIELD) ctx.fillRect(left + (i % 5) * SECTOR + 7, top + Math.floor(i / 5) * SECTOR + 7, 4, 4);
       }
@@ -1552,7 +1559,7 @@ class PhaseTitle {
 }
 
 function drawTimer(ctx, seconds) {
-  drawVectorText(ctx, String(Math.max(0, seconds)).padStart(2, "0"), 10, 690, 3.5, 3.5, rgba(1, 1, 1, 0.5));
+  drawCenteredVectorText(ctx, String(Math.max(0, seconds)).padStart(2, "0"), HUD_TIMER_Y, 3.5 * HUD_SCALE, 3.5 * HUD_SCALE, rgba(1, 1, 1, HUD_OPACITY));
 }
 
 class PlaceGunsPhase {
@@ -1627,9 +1634,12 @@ class PlaceGunsPhase {
     const gun = this.game.guns[this.indexOfGunPointer];
     const ox = gun.x;
     const oy = gun.y;
+    const count = Math.max(0, this.newGuns);
+    const spacing = (SECTOR * 2 + 5) * HUD_SCALE;
+    const startX = W / 2 - ((count - 1) * spacing) / 2;
     for (let i = this.newGuns; i > 0; i--) {
-      gun.moveTo(120 + (this.newGuns - i) * (SECTOR * 2 + 5), 716);
-      gun.draw(ctx);
+      gun.moveTo(startX + (this.newGuns - i) * spacing, HUD_PREVIEW_Y);
+      gun.draw(ctx, HUD_OPACITY, HUD_SCALE);
     }
     gun.moveTo(ox, oy);
   }
@@ -1752,8 +1762,8 @@ class PlaceShieldsPhase {
     this.title.start(0);
     this.section.reshape(this.game.rng.generate(0, 10));
     this.section.move(0, 0);
-    this.next.color = { r: 1, g: 1, b: 1, a: 0.5 };
-    this.next.move(120, 716);
+    this.next.color = { r: 1, g: 1, b: 1, a: HUD_OPACITY };
+    this.next.move(W / 2, HUD_PREVIEW_Y);
     this.nextShape = this.game.rng.generate(0, 10);
     this.next.reshape(this.nextShape);
     this.util.testForEnclosures();
@@ -1800,7 +1810,7 @@ class PlaceShieldsPhase {
     this.game.grid.displayGrid(ctx, this.game.pointer.x, this.game.pointer.y, 100);
     this.game.drawWorld(ctx);
     this.section.draw(ctx, true);
-    this.next.draw(ctx);
+    this.next.draw(ctx, false, HUD_SCALE, HUD_OPACITY);
   }
 }
 
