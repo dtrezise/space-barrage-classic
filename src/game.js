@@ -1347,10 +1347,21 @@ class TitlePhase {
     if (this.isGameOver) this.game.drawWorld(ctx);
     drawCenteredVectorText(ctx, title, this.titleY, titleScaleX, titleScaleY, rgba(this.isGameOver ? 1 : 1, this.isGameOver ? 0.2 : 1, this.isGameOver ? 0.2 : 0.2, this.titleAlpha), this.titleGlow);
     if (!this.isGameOver) {
-      drawCenteredVectorText(ctx, "CLICK TO BEGIN", 500, 1.5, 1.5, rgba(0.5, 0.5, 1, this.titleAlpha));
+      this.drawTitleInfo(ctx);
+      drawCenteredVectorText(ctx, "CLICK TO BEGIN", 650, 1.5, 1.5, rgba(0.5, 0.5, 1, this.titleAlpha));
     } else {
       drawCenteredVectorText(ctx, `You made it to Stage ${this.game.currentLevel}.`, 700, 1.1, 1.1, rgba(1, 1, 1, this.titleAlpha));
     }
+  }
+
+  drawTitleInfo(ctx) {
+    const alpha = this.titleAlpha;
+    drawCenteredVectorText(ctx, "Protect your barges with shields, deploy guns, and survive three waves per stage.", 405, 0.62, 0.62, rgba(0.75, 0.85, 1, alpha * 0.85));
+    drawCenteredVectorText(ctx, "CONTROLS", 455, 0.85, 0.85, rgba(1, 1, 0.25, alpha * 0.9));
+    drawCenteredVectorText(ctx, "Mouse: choose barges, place pieces, aim, and fire", 490, 0.58, 0.58, rgba(1, 1, 1, alpha * 0.8));
+    drawCenteredVectorText(ctx, "Right click or Space: rotate shield sections", 520, 0.58, 0.58, rgba(1, 1, 1, alpha * 0.8));
+    drawCenteredVectorText(ctx, "Space during battle: fire", 550, 0.58, 0.58, rgba(1, 1, 1, alpha * 0.8));
+    drawCenteredVectorText(ctx, "M: toggle audio", 580, 0.58, 0.58, rgba(1, 1, 1, alpha * 0.8));
   }
 }
 
