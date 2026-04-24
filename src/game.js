@@ -6,9 +6,9 @@ const YS = H / SECTOR;
 const TOTAL_BARGES = 5;
 const TOTAL_GUNS = 100;
 const HUD_SCALE = 1.25;
-const HUD_OPACITY = 0.75;
+const HUD_OPACITY = 0.25;
 const HUD_TIMER_Y = H / 2 - 70;
-const HUD_PREVIEW_Y = H / 2 + 90;
+const HUD_PREVIEW_Y = H / 2;
 
 const ST = {
   NULL: -1,
